@@ -13,6 +13,7 @@
 using RTC = RTC_DS3231;
 using LCD = LCD_ST7032;
 
+#define PIN_SW 2
 #define PIN_LCD_BACKLIGHT 3
 #define PIN_ENCODER_A 4
 #define PIN_ENCODER_B 5
@@ -31,6 +32,7 @@ void setup() {
   initRTC(rtc);
   initLCD(lcd);
   initEncoder(encoder);
+  initSW();
 
   setLCDBlightness(lcd,1.5f);
   rtc.setAlarm1(DateTime(F(__DATE__), F(__TIME__)) + TimeSpan(5), Ds3231Alarm1Mode::DS3231_A1_Second);
@@ -174,4 +176,22 @@ void calcEncoderInput(Encoder& encoder){
     }
     encoder.rotate_flag = 0;
   }
+}
+
+//--------------------------------------------------------------------------------
+//! @brief   スイッチの初期化
+//! @return  初期化に成功したか
+//--------------------------------------------------------------------------------
+bool initSW(){
+  pinMode(PIN_SW, INPUT_PULLUP);
+  return true;
+}
+
+//--------------------------------------------------------------------------------
+//! @brief   スイッチがONか
+//! @return  ONならtrue
+//--------------------------------------------------------------------------------
+bool isSwitchON(){
+  Serial.println(digitalRead(PIN_SW));
+  return digitalRead(PIN_SW);
 }
