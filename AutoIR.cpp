@@ -78,19 +78,19 @@ void AutoIR::setLCDBlightness_(float targetV){
 }
 //--------------------------------------------------------------------------------
 bool AutoIR::initEncoder_(){
-  mEncoder.Timer_init(mInitArg.mPIN_ENCODER_A, mInitArg.mPIN_ENCODER_B);
+  encoder.Timer_init();
   return true;
 }
 //--------------------------------------------------------------------------------
 void AutoIR::calcEncoderInput_(){
     TimeSpan deltaTime(0,0,1,0);
-    if(mEncoder.rotate_flag==1){
-        if(mEncoder.direct==1){
+    if(encoder.rotate_flag==1){
+        if(encoder.direct==1){
             mAlarmTime = mAlarmTime + deltaTime;
         } else{
             mAlarmTime = mAlarmTime - deltaTime;
         }
-        mEncoder.rotate_flag = 0;
+        encoder.rotate_flag = 0;
     }
 }
 //--------------------------------------------------------------------------------

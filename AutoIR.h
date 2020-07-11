@@ -11,6 +11,7 @@
 // Encoder
 #include "Encoder.h"
 
+// Encoder encoder // Encoder.hの中で定義済
 
 class AutoIR{
     public:
@@ -23,8 +24,6 @@ class AutoIR{
         struct InitArg{
             int mPIN_SW;
             int mPIN_LCD_BACKLIGHT;
-            int mPIN_ENCODER_A;
-            int mPIN_ENCODER_B;
         };
         bool setup(const InitArg& arg);
 
@@ -95,7 +94,6 @@ class AutoIR{
         InitArg    mInitArg;
         RTC_DS3231 mRTC;
         LCD_ST7032 mLCD;
-        Encoder    mEncoder;
         int        mCounter;
         DateTime   mAlarmTime;
     //--------------------------------------------------------------------------------
