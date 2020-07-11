@@ -20,18 +20,8 @@ bool AutoIR::setup(const InitArg& arg){
 }
 //--------------------------------------------------------------------------------
 void AutoIR::loop(){
-    if(mRTC.alarmFired(1)){
-        dispLCD_("ALARM", 0);
-    } else {
-        char text[20] = "";
-        getTimeStr_(text);
-        dispLCD_(text, 0);
-    }
-
     calcEncoderInput_();
-    char buf[20] = "hh:mm:ss";
-    mAlarmTime.toString(buf);
-    dispLCD_(buf, 1);
+    updateLCD_();
 }
 //--------------------------------------------------------------------------------
 bool AutoIR::initRTC_(){
@@ -47,23 +37,38 @@ bool AutoIR::initRTC_(){
     return true;
 }
 //--------------------------------------------------------------------------------
-char* AutoIR::getTimeStr_(char* outChar){
-    DateTime time = mRTC.now();
-    char buf[] = "MM/DD hh:mm:ss";
-    time.toString(buf);
-    strcpy(outChar, buf);
-    return outChar;
-}
-//--------------------------------------------------------------------------------
 bool AutoIR::initLCD_(){
     mLCD.begin();
     pinMode(mInitArg.mPIN_LCD_BACKLIGHT, OUTPUT);
     return true;
 }
 //--------------------------------------------------------------------------------
-void AutoIR::dispLCD_(const char* str, int line){
-    mLCD.setCursor(line,0);
-    mLCD.print(str);
+void AutoIR::updateLCD_(){
+    
+    // ステータスを表示
+    String status = "ALM:";
+    status += (isSwitchON_() ? "ON ": "OFF");
+    mLCD.setCursor(0,0);
+    mLCD.print(status);
+
+    // 時刻を取得
+    char strCurTime[20] = "hh:mm:ss";
+    DateTime curTime = mRTC.now();
+    curTime.toString(strCurTime);
+    mLCD.setCursor(0,8);
+    mLCD.print(strCurTime);
+
+    // アラームのトリガーを表示
+    if(mRTC.alarmFired(1)){
+        mLCD.setCursor(1,0);
+        mLCD.print("ALARM");
+    }
+
+    // アラームの時刻を表示
+    char strAlarmTime[20] = "hh:mm:ss";
+    mAlarmTime.toString(strAlarmTime);
+    mLCD.setCursor(1,8);
+    mLCD.print(strAlarmTime);
 }
 //--------------------------------------------------------------------------------
 void AutoIR::setLCDBlightness_(float targetV){
