@@ -32,7 +32,8 @@ void setup() {
 //--------------------------------------------------------------------------------
 void loop() {
   dispTime(rtc);
-  const char text[] = "hello";
+  char text[20] = "";
+  getTimeStr(rtc, text);
   dispLCD(lcd, text);
   delay(1000);
 }
@@ -74,6 +75,20 @@ void dispTime(RTC& rtc){
   Serial.print(":");
   Serial.print(time.second(), DEC);
   Serial.print("\n");
+}
+
+//--------------------------------------------------------------------------------
+//! @brief   現在の時刻を文字列として取得
+//! @param   rtc RTCのインスタンス
+//! @param   outChar 出力先バッファのポインタ
+//! @return  出力先バッファのポインタ
+//--------------------------------------------------------------------------------
+char* getTimeStr(RTC& rtc, char* outChar){
+  DateTime time = rtc.now();
+  char buf[] = "MM/DD hh:mm:ss";
+  time.toString(buf);
+  strcpy(outChar, buf);
+  return outChar;
 }
 
 //--------------------------------------------------------------------------------
