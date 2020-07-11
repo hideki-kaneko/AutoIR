@@ -15,6 +15,7 @@ bool AutoIR::setup(const InitArg& arg){
 
     setLCDBlightness_(1.5f);
     mRTC.setAlarm1(DateTime(F(__DATE__), F(__TIME__)) + TimeSpan(5), Ds3231Alarm1Mode::DS3231_A1_Second);
+    mAlarmTime = mRTC.now();
 
     Serial.println("初期化完了");
 }
@@ -89,11 +90,15 @@ bool AutoIR::initEncoder_(){
 //--------------------------------------------------------------------------------
 void AutoIR::calcEncoderInput_(){
     TimeSpan deltaTime(0,0,1,0);
+    DateTime now = mRTC.now();
     if(encoder.rotate_flag==1){
         if(encoder.direct==1){
             mAlarmTime = mAlarmTime + deltaTime;
         } else{
-            mAlarmTime = mAlarmTime - deltaTime;
+            DateTime minTime(now.year(), now.month(), now.day(), 0, 0, 0);
+            if( mAlarmTime > minTime ){
+                mAlarmTime = mAlarmTime - deltaTime;
+            }
         }
         encoder.rotate_flag = 0;
     }
