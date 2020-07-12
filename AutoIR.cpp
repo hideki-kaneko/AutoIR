@@ -20,6 +20,8 @@ bool AutoIR::setup(const InitArg& arg){
 
     setLCDBlightness_(1.5f);
     loadAlarmTime_();
+    // DateTime time(2000,1,1,0,0,0);
+    // EEPROM.put(cEEPROMAddress_AlarmTime, time);
     mState = isSwitchON_()? State::Active: State::Edit;
 
     Serial.println("初期化完了");
@@ -117,12 +119,12 @@ void AutoIR::calcEncoderInput_(){
     DateTime now = mRTC.now();
     if(encoder.rotate_flag==1){
         if(encoder.direct==1){
-            DateTime maxTime(now.year(), now.month(), now.day(), 23,59,0);
+            DateTime maxTime(2000,1,1,23,59,0);
             if( mAlarmTime + deltaTime <= maxTime ){
                 mAlarmTime = mAlarmTime + deltaTime;
             }
         } else{
-            DateTime minTime(now.year(), now.month(), now.day(), 0, 0, 0);
+            DateTime minTime(2000,1,1,0,0,0);
             if( mAlarmTime - deltaTime >= minTime ){
                 mAlarmTime = mAlarmTime - deltaTime;
             }
@@ -162,11 +164,22 @@ void AutoIR::saveAlarmTime_(){
 void AutoIR::loadAlarmTime_(){
     EEPROM.get(cEEPROMAddress_AlarmTime, mAlarmTime);
     Serial.println("アラームの時刻をロード");
+    Serial.print(mAlarmTime.year());
+    Serial.print("/");
+    Serial.print(mAlarmTime.month());
+    Serial.print("/");
+    Serial.print(mAlarmTime.day());
+    Serial.print(" ");
+    Serial.print(mAlarmTime.hour());
+    Serial.print(":");
+    Serial.print(mAlarmTime.minute());
+    Serial.print(":");
+    Serial.println(mAlarmTime.second());
     if(mAlarmTime.isValid()){
         mRTC.setAlarm1(mAlarmTime, Ds3231Alarm1Mode::DS3231_A1_Hour);
     } else {
         Serial.println("データの読み込みに失敗しました");
-        mAlarmTime = DateTime(0,0,0,0,0,0);
+        mAlarmTime = DateTime(2000,1,1,0,0,0);
         mRTC.clearAlarm(1);
     }
 }
