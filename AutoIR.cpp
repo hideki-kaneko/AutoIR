@@ -4,6 +4,7 @@
 
 #include "AutoIR.h"
 #include <EEPROM.h>
+#include <IRremote.h>
 
 namespace{
     int cEEPROMAddress_AlarmTime = 0;
@@ -83,6 +84,7 @@ void AutoIR::updateLCD_(){
         mLCD.setCursor(1,0);
         mLCD.print("ALARM");
         mRTC.clearAlarm(1);
+        sendIR_();
         delay(1000);
         mLCD.clear();
     }
@@ -182,5 +184,12 @@ void AutoIR::loadAlarmTime_(){
         mAlarmTime = DateTime(2000,1,1,0,0,0);
         mRTC.clearAlarm(1);
     }
+}
+//--------------------------------------------------------------------------------
+void AutoIR::sendIR_(){
+    IRsend irsend(mInitArg.mPIN_IR_SEND);
+    const int khz = 38; // 38kHz carrier frequency for the NEC protocol
+    unsigned int irSignal[] = { 8850,4550, 450,600, 550,1700, 500,600, 550,600, 500,600, 500,600, 550,600, 500,1700, 550,1700, 500,600, 550,1700, 500,1750, 500,600, 500,1700, 550,1800, 450,550, 550,1700, 550,1700, 500,1700, 550,1700, 500,1750, 500,1700, 550,600, 500,1700, 550,600, 500,600, 500,600, 550,600, 500,600, 500,600, 550,1700, 500,600, 550 };
+    irsend.sendRaw(irSignal, sizeof(irSignal) / sizeof(irSignal[0]), khz); // Note the approach used to automatically calculate the size of the array.
 }
 //--------------------------------------------------------------------------------

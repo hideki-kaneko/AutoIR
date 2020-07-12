@@ -24,6 +24,7 @@ class AutoIR{
         struct InitArg{
             int mPIN_SW;
             int mPIN_LCD_BACKLIGHT;
+            int mPIN_IR_SEND;
         };
         bool setup(const InitArg& arg);
 
@@ -98,6 +99,8 @@ class AutoIR{
         void saveAlarmTime_();
 
         void loadAlarmTime_();
+
+        void sendIR_();
 
     private:
     //--------------------------------------------------------------------------------
