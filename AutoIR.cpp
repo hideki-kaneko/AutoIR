@@ -19,8 +19,6 @@ bool AutoIR::setup(const InitArg& arg){
     initSW_();
 
     setLCDBlightness_(1.5f);
-    mRTC.setAlarm1(DateTime(F(__DATE__), F(__TIME__)) + TimeSpan(10), Ds3231Alarm1Mode::DS3231_A1_Hour & Ds3231Alarm1Mode::DS3231_A1_Minute & Ds3231Alarm1Mode::DS3231_A1_Second);
-    
     loadAlarmTime_();
     mState = isSwitchON_()? State::Active: State::Edit;
 
@@ -55,10 +53,15 @@ bool AutoIR::initLCD_(){
 void AutoIR::updateLCD_(){
     
     // ステータスを表示
-    // String status = "ALM:";
-    // status += (isSwitchON_() ? "ON ": "OFF");
-    // mLCD.setCursor(0,0);
-    // mLCD.print(status);
+    if(mState == State::Active){
+        mLCD.setCursor(1,0);
+        mLCD.print("ALM ON");
+    } else if(mState == State::Edit){
+        mLCD.setCursor(1,0);
+        mLCD.print("EDIT");
+        mLCD.setCursor(1,7);
+        mLCD.print(">");
+    }
 
     // 日時を表示
     DateTime now = mRTC.now();
@@ -106,6 +109,10 @@ bool AutoIR::initEncoder_(){
 }
 //--------------------------------------------------------------------------------
 void AutoIR::calcEncoderInput_(){
+    if(mState != State::Edit){
+        return;
+    }
+
     TimeSpan deltaTime(0,0,1,0);
     DateTime now = mRTC.now();
     if(encoder.rotate_flag==1){
@@ -132,8 +139,11 @@ bool AutoIR::isSwitchON_() const {
 //--------------------------------------------------------------------------------
 void AutoIR::updateState_(){
     const State newState = isSwitchON_()? State::Active: State::Edit;
-    if(mState == State::Edit && newState == State::Active){
-        saveAlarmTime_();
+    if(newState != mState){
+        mLCD.clear();
+        if( newState == State::Active ){
+            saveAlarmTime_();
+        }
     }
     mState = newState;
 }
@@ -143,14 +153,18 @@ void AutoIR::saveAlarmTime_(){
     Serial.print("アラームの時刻をセーブ(");
     Serial.print(sizeof(mAlarmTime));
     Serial.println("bytes)");
+    mRTC.setAlarm1(mAlarmTime, Ds3231Alarm1Mode::DS3231_A1_Hour & Ds3231Alarm1Mode::DS3231_A1_Minute & Ds3231Alarm1Mode::DS3231_A1_Second);
 }
 //--------------------------------------------------------------------------------
 void AutoIR::loadAlarmTime_(){
     EEPROM.get(cEEPROMAddress_AlarmTime, mAlarmTime);
     Serial.println("アラームの時刻をロード");
-    if(!mAlarmTime.isValid()){
+    if(mAlarmTime.isValid()){
+        mRTC.setAlarm1(mAlarmTime, Ds3231Alarm1Mode::DS3231_A1_Hour & Ds3231Alarm1Mode::DS3231_A1_Minute & Ds3231Alarm1Mode::DS3231_A1_Second);
+    } else {
         Serial.println("データの読み込みに失敗しました");
         mAlarmTime = mRTC.now();
+        mRTC.clearAlarm(1);
     }
 }
 //--------------------------------------------------------------------------------
