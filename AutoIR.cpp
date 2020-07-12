@@ -14,7 +14,7 @@ bool AutoIR::setup(const InitArg& arg){
     initSW_();
 
     setLCDBlightness_(1.5f);
-    mRTC.setAlarm1(DateTime(F(__DATE__), F(__TIME__)) + TimeSpan(5), Ds3231Alarm1Mode::DS3231_A1_Second);
+    mRTC.setAlarm1(DateTime(F(__DATE__), F(__TIME__)) + TimeSpan(10), Ds3231Alarm1Mode::DS3231_A1_Hour & Ds3231Alarm1Mode::DS3231_A1_Minute & Ds3231Alarm1Mode::DS3231_A1_Second);
     mAlarmTime = mRTC.now();
 
     Serial.println("初期化完了");
@@ -47,15 +47,21 @@ bool AutoIR::initLCD_(){
 void AutoIR::updateLCD_(){
     
     // ステータスを表示
-    String status = "ALM:";
-    status += (isSwitchON_() ? "ON ": "OFF");
+    // String status = "ALM:";
+    // status += (isSwitchON_() ? "ON ": "OFF");
+    // mLCD.setCursor(0,0);
+    // mLCD.print(status);
+
+    // 日時を表示
+    DateTime now = mRTC.now();
+    char strCurDate[20] = "MM/DD";
+    now.toString(strCurDate);
     mLCD.setCursor(0,0);
-    mLCD.print(status);
+    mLCD.print(strCurDate);
 
     // 時刻を取得
     char strCurTime[20] = "hh:mm:ss";
-    DateTime curTime = mRTC.now();
-    curTime.toString(strCurTime);
+    now.toString(strCurTime);
     mLCD.setCursor(0,8);
     mLCD.print(strCurTime);
 
@@ -63,6 +69,9 @@ void AutoIR::updateLCD_(){
     if(mRTC.alarmFired(1)){
         mLCD.setCursor(1,0);
         mLCD.print("ALARM");
+        mRTC.clearAlarm(1);
+        delay(1000);
+        mLCD.clear();
     }
 
     // アラームの時刻を表示
