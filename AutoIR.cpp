@@ -3,6 +3,11 @@
 //--------------------------------------------------------------------------------
 
 #include "AutoIR.h"
+#include <EEPROM.h>
+
+namespace{
+    int cEEPROMAddress_AlarmTime = 0;
+}
 
 //--------------------------------------------------------------------------------
 bool AutoIR::setup(const InitArg& arg){
@@ -15,7 +20,9 @@ bool AutoIR::setup(const InitArg& arg){
 
     setLCDBlightness_(1.5f);
     mRTC.setAlarm1(DateTime(F(__DATE__), F(__TIME__)) + TimeSpan(10), Ds3231Alarm1Mode::DS3231_A1_Hour & Ds3231Alarm1Mode::DS3231_A1_Minute & Ds3231Alarm1Mode::DS3231_A1_Second);
-    mAlarmTime = mRTC.now();
+    
+    loadAlarmTime_();
+    mState = isSwitchON_()? State::Active: State::Edit;
 
     Serial.println("初期化完了");
 }
@@ -23,6 +30,7 @@ bool AutoIR::setup(const InitArg& arg){
 void AutoIR::loop(){
     calcEncoderInput_();
     updateLCD_();
+    updateState_();
 }
 //--------------------------------------------------------------------------------
 bool AutoIR::initRTC_(){
@@ -119,7 +127,30 @@ bool AutoIR::initSW_(){
 }
 //--------------------------------------------------------------------------------
 bool AutoIR::isSwitchON_() const {
-    Serial.println(digitalRead(mInitArg.mPIN_SW));
     return digitalRead(mInitArg.mPIN_SW);
+}
+//--------------------------------------------------------------------------------
+void AutoIR::updateState_(){
+    const State newState = isSwitchON_()? State::Active: State::Edit;
+    if(mState == State::Edit && newState == State::Active){
+        saveAlarmTime_();
+    }
+    mState = newState;
+}
+//--------------------------------------------------------------------------------
+void AutoIR::saveAlarmTime_(){
+    EEPROM.put(cEEPROMAddress_AlarmTime, mAlarmTime);
+    Serial.print("アラームの時刻をセーブ(");
+    Serial.print(sizeof(mAlarmTime));
+    Serial.println("bytes)");
+}
+//--------------------------------------------------------------------------------
+void AutoIR::loadAlarmTime_(){
+    EEPROM.get(cEEPROMAddress_AlarmTime, mAlarmTime);
+    Serial.println("アラームの時刻をロード");
+    if(!mAlarmTime.isValid()){
+        Serial.println("データの読み込みに失敗しました");
+        mAlarmTime = mRTC.now();
+    }
 }
 //--------------------------------------------------------------------------------
