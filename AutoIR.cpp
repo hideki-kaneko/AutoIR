@@ -117,10 +117,13 @@ void AutoIR::calcEncoderInput_(){
     DateTime now = mRTC.now();
     if(encoder.rotate_flag==1){
         if(encoder.direct==1){
-            mAlarmTime = mAlarmTime + deltaTime;
+            DateTime maxTime(now.year(), now.month(), now.day(), 23,59,59);
+            if( mAlarmTime + deltaTime <= maxTime ){
+                mAlarmTime = mAlarmTime + deltaTime;
+            }
         } else{
             DateTime minTime(now.year(), now.month(), now.day(), 0, 0, 0);
-            if( mAlarmTime > minTime ){
+            if( mAlarmTime - deltaTime >= minTime ){
                 mAlarmTime = mAlarmTime - deltaTime;
             }
         }
@@ -163,7 +166,7 @@ void AutoIR::loadAlarmTime_(){
         mRTC.setAlarm1(mAlarmTime, Ds3231Alarm1Mode::DS3231_A1_Hour & Ds3231Alarm1Mode::DS3231_A1_Minute & Ds3231Alarm1Mode::DS3231_A1_Second);
     } else {
         Serial.println("データの読み込みに失敗しました");
-        mAlarmTime = mRTC.now();
+        mAlarmTime = DateTime(0,0,0,0,0,0);
         mRTC.clearAlarm(1);
     }
 }
