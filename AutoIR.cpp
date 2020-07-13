@@ -8,6 +8,7 @@
 
 namespace{
     int cEEPROMAddress_AlarmTime = 0;
+    float cLCDBacklightVoltage = 1.5f;
 }
 
 //--------------------------------------------------------------------------------
@@ -19,11 +20,11 @@ bool AutoIR::setup(const InitArg& arg){
     initEncoder_();
     initSW_();
 
-    setLCDBlightness_(1.5f);
     loadAlarmTime_();
     // DateTime time(2000,1,1,0,0,0);
     // EEPROM.put(cEEPROMAddress_AlarmTime, time);
     mState = isSwitchON_()? State::Active: State::Edit;
+    setLCDBlightness_(isSwitchON_()? 0.f: cLCDBacklightVoltage);
 
     Serial.println("初期化完了");
 }
@@ -150,6 +151,9 @@ void AutoIR::updateState_(){
         mLCD.clear();
         if( newState == State::Active ){
             saveAlarmTime_();
+            setLCDBlightness_(0.f);
+        } else {
+            setLCDBlightness_(cLCDBacklightVoltage);
         }
     }
     mState = newState;
